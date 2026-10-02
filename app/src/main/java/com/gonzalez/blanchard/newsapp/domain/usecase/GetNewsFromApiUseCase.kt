@@ -1,5 +1,6 @@
 package com.gonzalez.blanchard.newsapp.domain.usecase
 
+import com.gonzalez.blanchard.newsapp.BuildConfig
 import com.gonzalez.blanchard.newsapp.data.repository.NewsRepository
 import com.gonzalez.blanchard.newsapp.domain.model.NewsItem
 import com.gonzalez.blanchard.newsapp.utils.BusinessException
@@ -21,7 +22,7 @@ class GetNewsFromApiUseCase @Inject constructor(
 
             val news = repository.getTopNews(
                 country = "us",
-                apiKey = "20818d568e184c4991da2ad5864f124e"
+                apiKey = BuildConfig.NEWS_API_KEY
             )
             emit(Result.Complete(success = true, newsList = news))
         }catch (e: Throwable){

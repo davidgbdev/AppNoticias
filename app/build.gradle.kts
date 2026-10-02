@@ -1,8 +1,39 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
     alias(libs.plugins.ksp)
     alias(libs.plugins.daggerhilt)
+}
+
+val newsApiKeyPlaceholder = "tu_clave_de_newsapi"
+val newsApiKey: String = providers
+    .fileContents(rootProject.layout.projectDirectory.file("secrets.properties"))
+    .asText
+    .map { content ->
+        val properties = Properties()
+        properties.load(content.reader())
+        properties.getProperty("NEWS_API_KEY").orEmpty().trim()
+    }
+    .orElse("")
+    .get()
+
+if (newsApiKey.isEmpty() || newsApiKey == newsApiKeyPlaceholder) {
+    throw GradleException(
+        "Define NEWS_API_KEY en secrets.properties. " +
+            "Copia secrets.properties.example y sustituye el valor de ejemplo. " +
+            "Ese archivo está en .gitignore y no debe subirse al repositorio."
+    )
+}
+
+fun asBuildConfigString(value: String): String {
+    val escaped = value
+        .replace("\\", "\\\\")
+        .replace("\"", "\\\"")
+        .replace("\n", "")
+        .replace("\r", "")
+    return "\"" + escaped + "\""
 }
 
 android {
@@ -21,6 +52,8 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        buildConfigField("String", "NEWS_API_KEY", asBuildConfigString(newsApiKey))
     }
 
     buildTypes {
@@ -41,6 +74,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
